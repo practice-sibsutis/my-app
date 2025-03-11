@@ -1,0 +1,16 @@
+.myBtn {
+    padding: 5px 15px;
+    color: purple;
+    font-size: 14px;
+    background: transparent;
+    border: 1px solid purple;
+    cursor: pointer;
+}
+
+.myBtn:hover {
+    box-shadow: 0px 0px 0px 1px red;
+}
+
+.myBtn:active {
+    background: red;
+}

@@ -1,23 +1,70 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from "react";
+import './styles/App.css'
+import TodoList from "./components/TodoList";
+import TodoForm from "./components/TodoForm";
+import MySelect from "./components/UI/select/MySelect";
+import MyInput from "./components/UI/input/MyInput";
+import MyModal from "./components/UI/MyModal/MyModal";
+import MyButton from "./components/UI/button/MyButton";
+import MyCheckbox from "./components/UI/checkbox/MyCheckbox";
+import {
+  useFilteredAndSortedTodoList,
+} from "./hooks/useSortedAndFilteredTodoList";
 
 function App() {
+  const [todoList, setTodoList] = useState([
+    {id: 1, title: 'HTML', description: 'Выучить html', isComplete: false},
+    {id: 2, title: 'CSS', description: 'Выучить css', isComplete: false},
+    {id: 3, title: 'JavaScript', description: 'Выучить javascript', isComplete: false},
+    {id: 4, title: 'React', description: 'Выучить react', isComplete: false}
+  ]);
+
+  const [hideCompleted, setHideCompleted] = useState(false);
+  const [sortMode, setSortMode] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const changeStatus = (isComplete, todo) => {
+    setTodoList(todoList.map(item => {
+      if(todo.id === item.id) {
+        item.isComplete = isComplete;
+      }
+      return item;
+    }));
+  }
+
+  const sortTodoList = mode => {
+    setSortMode(mode);
+  }
+
+  const filteredAndSortedTodoList = useFilteredAndSortedTodoList(todoList, sortMode, hideCompleted, searchQuery);
+
+  const deleteTodo = todo => {
+    setTodoList(todoList.filter(item => item.id !== todo.id));
+  }
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <MyButton style={{marginTop: "20px"}} onClick={() => setIsModalVisible(!isModalVisible)}>
+        Добавить запись
+      </MyButton>
+      <MyModal visible={isModalVisible} setVisible={setIsModalVisible}>
+        <TodoForm createTodo={(newTodo) => {
+          setTodoList([...todoList, newTodo]);
+          setIsModalVisible(false);
+        }}/>
+      </MyModal>
+
+      <hr style={{marginTop: '20px', marginBottom: '20px'}}/>
+      Скрыть выполненные
+      <MyCheckbox checked={hideCompleted} onChange={e => setHideCompleted(e.target.checked)}/>
+      <MySelect value={sortMode} onChange={sortTodoList} defaultValue="Сортировка по..." options={[
+          {id: 1, value: 'title', title: 'По названию'},
+        {id: 2, value: 'description', title: 'По описанию'}]}/>
+      <MyInput placeholder="Поиск" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}/>
+      <TodoList todoList={filteredAndSortedTodoList}
+                title='Список дел'
+                changeStatus={changeStatus} deleteTodo={deleteTodo}/>
     </div>
   );
 }

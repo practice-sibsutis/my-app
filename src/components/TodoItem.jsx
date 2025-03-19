@@ -1,8 +1,15 @@
-import React from 'react';
+import React, {memo, useContext, useEffect} from 'react';
 import MyCheckbox from "./UI/checkbox/MyCheckbox";
 import MyButton from "./UI/button/MyButton";
+import {ChangeStatusContext} from "../Context";
 
 const TodoItem = (props) => {
+    const changeStatus = useContext(ChangeStatusContext);
+    useEffect(() => {
+        return () => {
+            console.log(`УДАЛЕНИЕ ${props.todo}`);
+        }
+    }, [])
     return (
     <div className="todoItem">
         <div className="todoItem__content">
@@ -18,7 +25,7 @@ const TodoItem = (props) => {
         </div>
         <div className="todoItem__btns">
             <MyCheckbox checked={props.todo.isComplete}
-                        onChange={e => props.changeStatus(e.target.checked, props.todo)}/>
+                        onChange={e => changeStatus(e.target.checked, props.todo)}/>
           <MyButton style={{marginLeft: "5px"}} onClick={() => props.deleteTodo(props.todo)}>Удалить</MyButton>
         </div>
     </div>

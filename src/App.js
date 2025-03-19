@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {useEffect, useLayoutEffect, useState} from "react";
 import './styles/App.css'
 import TodoList from "./components/TodoList";
 import TodoForm from "./components/TodoForm";
@@ -10,14 +10,40 @@ import MyCheckbox from "./components/UI/checkbox/MyCheckbox";
 import {
   useFilteredAndSortedTodoList,
 } from "./hooks/useSortedAndFilteredTodoList";
+import {getTodos} from "./api/getTodos";
+import Loader from "./components/UI/loader/Loader";
+import {ChangeStatusContext} from "./Context"
 
 function App() {
-  const [todoList, setTodoList] = useState([
-    {id: 1, title: 'HTML', description: 'Выучить html', isComplete: false},
-    {id: 2, title: 'CSS', description: 'Выучить css', isComplete: false},
-    {id: 3, title: 'JavaScript', description: 'Выучить javascript', isComplete: false},
-    {id: 4, title: 'React', description: 'Выучить react', isComplete: false}
-  ]);
+  const [todoList, setTodoList] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchTodos = async () => {
+      setIsLoading(true);
+      setTimeout(async () => {
+          const data = (await getTodos()).map(item => {
+              return ({
+                  id: item.id,
+                  title: item.title,
+                  description: item.title,
+                  isComplete: item.completed
+              })
+          });
+
+          /*const data = [
+              {id: 1, title: 'Выучить HTML', description: 'Выучить HTML', isComplete: false},
+              {id: 2, title: 'Выучить CSS', description: 'Выучить CSS', isComplete: false},
+              {id: 3, title: 'Выучить JavaScript', description: 'Выучить JavaScript', isComplete: false},
+              {id: 4, title: 'Выучить React', description: 'Выучить React', isComplete: false}];*/
+
+          setTodoList(data);
+          setIsLoading(false);
+      }, 2000);
+  }
+
+  useEffect(() => {
+      fetchTodos();
+  }, [])
 
   const [hideCompleted, setHideCompleted] = useState(false);
   const [sortMode, setSortMode] = useState('');
@@ -32,6 +58,8 @@ function App() {
       return item;
     }));
   }
+
+
 
   const sortTodoList = mode => {
     setSortMode(mode);
@@ -62,9 +90,12 @@ function App() {
           {id: 1, value: 'title', title: 'По названию'},
         {id: 2, value: 'description', title: 'По описанию'}]}/>
       <MyInput placeholder="Поиск" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}/>
-      <TodoList todoList={filteredAndSortedTodoList}
-                title='Список дел'
-                changeStatus={changeStatus} deleteTodo={deleteTodo}/>
+        {isLoading ? <div style={{display: "flex", justifyContent: "center"}}><Loader/></div>
+            : <ChangeStatusContext value={changeStatus}>
+                    <TodoList todoList={filteredAndSortedTodoList}
+                    title='Список дел'
+                    changeStatus={changeStatus} deleteTodo={deleteTodo}/>
+                </ChangeStatusContext>}
     </div>
   );
 }
